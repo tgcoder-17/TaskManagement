@@ -29,8 +29,9 @@ namespace TaskManagement.API.DTOs.Tasks
         public TaskPriorityEnum Priority { get; set; }
 
         /// <summary>
-        /// Optional due date for the task
+        /// Optional due date for the task (must be in the future)
         /// </summary>
+        [NotInPastDate]
         public DateTime? DueDate { get; set; }
 
         /// <summary>

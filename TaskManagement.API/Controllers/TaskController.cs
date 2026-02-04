@@ -12,7 +12,7 @@ namespace TaskManagement.API.Controllers
     /// Manages task-related operations
     /// </summary>
     [ApiController]
-    [Route("api/task")]
+    [Route("api/v1/task")]
     [Authorize]
     public class TaskController : ControllerBase
     {
@@ -106,6 +106,10 @@ namespace TaskManagement.API.Controllers
         /// Deletes a task (Admin or task owner only)
         /// </summary>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

@@ -14,9 +14,14 @@ namespace TaskManagement.API.DTOs.Auth
         public string Email { get; set; } = null!;
 
         /// <summary>
-        /// User password (minimum 8 characters)
+        /// Password must be at least 8 characters long,
+        /// contain at least one uppercase letter and one number
         /// </summary>
-        [Required, MinLength(8)]
+        [Required]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters long")]
+        [RegularExpression(
+        @"^(?=.*[A-Z])(?=.*\d).+$",
+        ErrorMessage = "Password must contain at least one uppercase letter and one number")]
         public string Password { get; set; } = null!;
 
         /// <summary>
