@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using TaskManagement.API.Data;
 using TaskManagement.API.Extensions;
 using TaskManagement.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseCustomSerilog();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -29,7 +32,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate =
+        "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+});
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

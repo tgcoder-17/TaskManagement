@@ -26,12 +26,11 @@ namespace TaskManagement.API.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.Message);
                 await HandleExceptionAsync(context, ex);
             }
         }
 
-        private static async Task HandleExceptionAsync(
+        private async Task HandleExceptionAsync(
             HttpContext context,
             Exception exception)
         {
@@ -45,14 +44,28 @@ namespace TaskManagement.API.Middleware
                     response.Errors = badRequestEx.Errors.Any()
                         ? badRequestEx.Errors
                         : new List<string> { badRequestEx.Message };
+
+                    _logger.LogWarning("Bad Request for {Method} {Path}: {Message}",
+                        context.Request.Method,
+                        context.Request.Path,
+                        response.Message);
                     break;
 
                 case NotFoundException notFoundEx:
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     response.Message = notFoundEx.Message;
+
+                    _logger.LogWarning("Data not found for {Method} {Path}: {Message}",
+                      context.Request.Method,
+                      context.Request.Path,
+                      notFoundEx.Message);
                     break;
 
                 default:
+                    _logger.LogError(exception, "Unhandled exception for {Method} {Path}",
+                         context.Request.Method,
+                         context.Request.Path);
+
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     response.Message = "An unexpected error occurred";
                     break;
