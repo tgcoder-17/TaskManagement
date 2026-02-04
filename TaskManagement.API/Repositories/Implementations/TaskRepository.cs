@@ -56,5 +56,24 @@ namespace TaskManagement.API.Repositories.Implementations
             _db.Tasks.Remove(task);
             await _db.SaveChangesAsync();
         }
+
+        public async Task<(List<TaskItem> Tasks, int TotalCount)> 
+            GetPagedAsync(int pageNumber, int pageSize, string sortOrder)
+        {
+            var query = _db.Tasks.AsNoTracking().AsQueryable();
+
+            query = sortOrder == "asc"
+                ? query.OrderBy(t => t.CreatedAt)
+                : query.OrderByDescending(t => t.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var tasks = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (tasks, totalCount);
+        }
     }
 }

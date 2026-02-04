@@ -1,4 +1,5 @@
-﻿using TaskManagement.API.DTOs.Tasks;
+﻿using TaskManagement.API.Common;
+using TaskManagement.API.DTOs.Tasks;
 using TaskManagement.API.Models.Enums;
 
 namespace TaskManagement.API.Services.Interfaces
@@ -15,5 +16,6 @@ namespace TaskManagement.API.Services.Interfaces
         Task UpdateAsync(Guid id, UpdateTaskDto dto);
         Task UpdateStatusAsync(Guid id, UpdateStatusDto dto);
         Task DeleteAsync(Guid id, Guid userId, bool isAdmin);
+        Task<PagedResponseDto<TaskResponseDto>> GetPagedAsync(PagedRequestDto dto);
     }
 }

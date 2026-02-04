@@ -6,6 +6,7 @@ using TaskManagement.API.Repositories.Interfaces;
 using TaskManagement.API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
+using TaskManagement.API.Common;
 
 namespace TaskManagement.API.Services.Implementations
 {
@@ -113,5 +114,22 @@ namespace TaskManagement.API.Services.Implementations
 
             _cache.Remove($"{TaskCacheKeyPrefix}{id}");
         }
+
+        public async Task<PagedResponseDto<TaskResponseDto>> GetPagedAsync(PagedRequestDto dto)
+        {
+            var (tasks, totalCount) = await _taskRepo.GetPagedAsync(
+                dto.PageNumber,
+                dto.PageSize,
+                dto.SortOrder);
+
+            return new PagedResponseDto<TaskResponseDto>
+            {
+                PageNumber = dto.PageNumber,
+                PageSize = dto.PageSize,
+                TotalRecords = totalCount,
+                Items = _mapper.Map<List<TaskResponseDto>>(tasks)
+            };
+        }
+
     }
 }

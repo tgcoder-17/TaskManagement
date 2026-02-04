@@ -14,5 +14,7 @@ namespace TaskManagement.API.Repositories.Interfaces
         Task AddAsync(TaskItem task);
         Task UpdateAsync(TaskItem task);
         Task DeleteAsync(TaskItem task);
+        Task<(List<TaskItem> Tasks, int TotalCount)> 
+            GetPagedAsync(int pageNumber, int pageSize, string sortOrder);
     }
 }
