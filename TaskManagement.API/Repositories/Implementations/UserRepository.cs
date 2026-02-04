@@ -24,6 +24,11 @@ namespace TaskManagement.API.Repositories.Implementations
             return await _db.Users.AnyAsync(u => u.Email == email);
         }
 
+        public async Task<bool> UserExistsAsync(Guid userId)
+        {
+            return await _db.Users.AnyAsync(u => u.Id == userId);
+        }
+
         public async Task AddAsync(User user)
         {
             _db.Users.Add(user);

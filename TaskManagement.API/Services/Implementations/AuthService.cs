@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using TaskManagement.API.Common.Exceptions;
 using TaskManagement.API.DTOs.Auth;
 using TaskManagement.API.Helpers;
@@ -13,13 +14,17 @@ namespace TaskManagement.API.Services.Implementations
         private readonly IUserRepository _userRepository;
         private readonly JwtTokenService _tokenService;
         private readonly PasswordHasher<User> _passwordHasher = new();
+        private readonly IMapper _mapper;
+
 
         public AuthService(
             IUserRepository userRepository,
-            JwtTokenService tokenService)
+            JwtTokenService tokenService,
+            IMapper mapper)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
+            _mapper = mapper;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
@@ -29,12 +34,8 @@ namespace TaskManagement.API.Services.Implementations
                         "Validation failed",
                         new List<string> { "Email already exists" });
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = dto.Email,
-                FullName = dto.FullName
-            };
+            var user = _mapper.Map<User>(dto);
+            user.Id = Guid.NewGuid();
 
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
 
@@ -45,6 +46,7 @@ namespace TaskManagement.API.Services.Implementations
             return new AuthResponseDto
             {
                 Token = token,
+                UserId = user.Id,
                 ExpiresAt = expiresAt
             };
         }
@@ -71,6 +73,7 @@ namespace TaskManagement.API.Services.Implementations
             return new AuthResponseDto
             {
                 Token = token,
+                UserId = user.Id,
                 ExpiresAt = expiresAt
             };
         }
