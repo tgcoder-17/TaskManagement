@@ -8,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddMemoryCache();
+
 builder.Services
     .AddApplicationServices(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration)

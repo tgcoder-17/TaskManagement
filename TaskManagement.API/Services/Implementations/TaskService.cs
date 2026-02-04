@@ -5,6 +5,7 @@ using TaskManagement.API.Models;
 using TaskManagement.API.Repositories.Interfaces;
 using TaskManagement.API.Services.Interfaces;
 using AutoMapper;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace TaskManagement.API.Services.Implementations
 {
@@ -12,16 +13,20 @@ namespace TaskManagement.API.Services.Implementations
     {
         private readonly ITaskRepository _taskRepo;
         private readonly IUserRepository _userRepo;
+        private readonly IMemoryCache _cache;
         private readonly IMapper _mapper;
 
+        private const string TaskCacheKeyPrefix = "task_";
 
         public TaskService(
             ITaskRepository taskRepo,
             IUserRepository userRepo,
+            IMemoryCache cache,
             IMapper mapper)
         {
             _taskRepo = taskRepo;
             _userRepo = userRepo;
+            _cache = cache;
             _mapper = mapper;
         }
 
@@ -41,10 +46,24 @@ namespace TaskManagement.API.Services.Implementations
 
         public async Task<TaskResponseDto> GetByIdAsync(Guid id)
         {
+            var cacheKey = $"{TaskCacheKeyPrefix}{id}";
+
+            if (_cache.TryGetValue(cacheKey, out TaskResponseDto cachedTask))
+            {
+                return cachedTask; 
+            }
+
             var task = await _taskRepo.GetByIdAsync(id)
                 ?? throw new NotFoundException("Task not found");
 
-            return _mapper.Map<TaskResponseDto>(task);
+            var response = _mapper.Map<TaskResponseDto>(task);
+
+            _cache.Set(
+                cacheKey,
+                response,
+                TimeSpan.FromMinutes(5));
+
+            return response;
         }
 
         public async Task<List<TaskResponseDto>> GetAllAsync(
@@ -65,6 +84,8 @@ namespace TaskManagement.API.Services.Implementations
             task.UpdatedAt = DateTime.UtcNow;
 
             await _taskRepo.UpdateAsync(task);
+            
+            _cache.Remove($"{TaskCacheKeyPrefix}{id}");
         }
 
         public async Task UpdateStatusAsync(Guid id, UpdateStatusDto dto)
@@ -76,6 +97,8 @@ namespace TaskManagement.API.Services.Implementations
             task.UpdatedAt = DateTime.UtcNow;
 
             await _taskRepo.UpdateAsync(task);
+
+            _cache.Remove($"{TaskCacheKeyPrefix}{id}");
         }
 
         public async Task DeleteAsync(Guid id, Guid userId, bool isAdmin)
@@ -87,6 +110,8 @@ namespace TaskManagement.API.Services.Implementations
                 throw new BadRequestException("You are not allowed to delete this task");
 
             await _taskRepo.DeleteAsync(task);
+
+            _cache.Remove($"{TaskCacheKeyPrefix}{id}");
         }
     }
 }
