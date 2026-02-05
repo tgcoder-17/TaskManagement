@@ -30,7 +30,7 @@
 ## 5. Local Setup
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/tgcoder-17/TaskManagement
     cd TaskManagement
     ```
 
