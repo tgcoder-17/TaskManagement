@@ -36,6 +36,21 @@ namespace TaskManagement.API.Controllers
         }
 
         /// <summary>
+        /// Create Admin User and returns a JWT access token (Added for local testing purposes)
+        /// </summary>
+        /// <param name="dto">User registration details</param>
+        /// <returns>JWT token with expiry information</returns>
+        [HttpPost("create-admin")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<AuthResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreateAdmin(RegisterDto dto)
+        {
+            var authResponse = await _authService.CreateAdminAsync(dto);
+            return Ok(ApiResponse<AuthResponseDto>.Success(authResponse));
+        }
+
+        /// <summary>
         /// Authenticates a user and returns a JWT access token
         /// </summary>
         /// <param name="dto">User login credentials</param>

@@ -59,6 +59,37 @@ namespace TaskManagement.API.Services.Implementations
             };
         }
 
+        public async Task<AuthResponseDto> CreateAdminAsync(RegisterDto dto)
+        {
+            if (await _userRepository.EmailExistsAsync(dto.Email))
+            {
+                _logger.LogWarning(
+                        "Registration failed. Email already exists: {Email}",
+                        dto.Email);
+
+                throw new BadRequestException(
+                        "Validation failed",
+                        new List<string> { "Email already exists" });
+            }
+
+            var user = _mapper.Map<User>(dto);
+            user.Role = Models.Enums.UserRoleEnum.Admin;
+            user.Id = Guid.NewGuid();
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
+
+            await _userRepository.AddAsync(user);
+
+            var token = _tokenService.GenerateToken(user, out var expiresAt);
+
+            return new AuthResponseDto
+            {
+                Token = token,
+                UserId = user.Id,
+                ExpiresAt = expiresAt
+            };
+        }
+
         public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
         {
             var user = await _userRepository.GetByEmailAsync(dto.Email);
